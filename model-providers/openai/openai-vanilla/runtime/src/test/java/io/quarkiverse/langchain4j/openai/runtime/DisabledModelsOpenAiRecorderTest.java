@@ -6,14 +6,19 @@ import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.DisabledChatModel;
 import dev.langchain4j.model.chat.DisabledStreamingChatModel;
+import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.embedding.DisabledEmbeddingModel;
+import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.image.DisabledImageModel;
 import dev.langchain4j.model.moderation.DisabledModerationModel;
+import dev.langchain4j.model.moderation.ModerationModel;
 import io.quarkiverse.langchain4j.openai.runtime.config.LangChain4jOpenAiConfig;
 import io.quarkiverse.langchain4j.openai.runtime.config.LangChain4jOpenAiConfig.OpenAiConfig;
 import io.quarkiverse.langchain4j.runtime.NamedConfigUtil;
+import io.quarkus.arc.SyntheticCreationalContext;
 import io.quarkus.runtime.RuntimeValue;
 
 class DisabledModelsOpenAiRecorderTest {
@@ -32,21 +37,25 @@ class DisabledModelsOpenAiRecorderTest {
 
     @Test
     void disabledChatModel() {
-        assertThat(recorder.chatModel(NamedConfigUtil.DEFAULT_NAME).apply(null))
+        SyntheticCreationalContext<ChatModel> mock = mock(SyntheticCreationalContext.class);
+
+        assertThat(recorder.chatModel(NamedConfigUtil.DEFAULT_NAME).apply(mock))
                 .isNotNull()
                 .isExactlyInstanceOf(DisabledChatModel.class);
     }
 
     @Test
     void disabledStreamingChatModel() {
-        assertThat(recorder.streamingChatModel(NamedConfigUtil.DEFAULT_NAME).apply(null))
+        SyntheticCreationalContext<StreamingChatModel> mock = mock(SyntheticCreationalContext.class);
+        assertThat(recorder.streamingChatModel(NamedConfigUtil.DEFAULT_NAME).apply(mock))
                 .isNotNull()
                 .isExactlyInstanceOf(DisabledStreamingChatModel.class);
     }
 
     @Test
     void disabledEmbeddingModel() {
-        assertThat(recorder.embeddingModel(NamedConfigUtil.DEFAULT_NAME).get())
+        SyntheticCreationalContext<EmbeddingModel> mock = mock(SyntheticCreationalContext.class);
+        assertThat(recorder.embeddingModel(NamedConfigUtil.DEFAULT_NAME).apply(mock))
                 .isNotNull()
                 .isExactlyInstanceOf(DisabledEmbeddingModel.class);
     }
@@ -60,7 +69,8 @@ class DisabledModelsOpenAiRecorderTest {
 
     @Test
     void disabledModerationModel() {
-        assertThat(recorder.moderationModel(NamedConfigUtil.DEFAULT_NAME).get())
+        SyntheticCreationalContext<ModerationModel> mock = mock(SyntheticCreationalContext.class);
+        assertThat(recorder.moderationModel(NamedConfigUtil.DEFAULT_NAME).apply(mock))
                 .isNotNull()
                 .isExactlyInstanceOf(DisabledModerationModel.class);
     }
