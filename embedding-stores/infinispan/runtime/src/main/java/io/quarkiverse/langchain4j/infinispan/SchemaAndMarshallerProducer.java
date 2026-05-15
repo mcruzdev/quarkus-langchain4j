@@ -9,6 +9,7 @@ import org.infinispan.protostream.FileDescriptorSource;
 import org.infinispan.protostream.MessageMarshaller;
 
 import io.quarkiverse.langchain4j.infinispan.runtime.InfinispanEmbeddingStoreConfig;
+import io.quarkiverse.langchain4j.infinispan.runtime.InfinispanStoreRuntimeConfig;
 import io.quarkiverse.langchain4j.infinispan.runtime.LangchainItemMarshaller;
 import io.quarkiverse.langchain4j.infinispan.runtime.LangchainMetadataMarshaller;
 
@@ -17,6 +18,10 @@ import io.quarkiverse.langchain4j.infinispan.runtime.LangchainMetadataMarshaller
  * to store and retrieve embeddings. The schema defines the structure of the
  * embedding item and its metadata, including the vector field with configurable
  * dimension and similarity metric.
+ * <p>
+ * Note: This producer creates schemas based on the default store configuration.
+ * When using named stores, all stores must use the same dimension as the default store,
+ * as Infinispan's global SerializationContext can only register one schema per dimension.
  */
 @ApplicationScoped
 public class SchemaAndMarshallerProducer {
@@ -61,7 +66,7 @@ public class SchemaAndMarshallerProducer {
 
     @Produces
     public FileDescriptorSource bookProtoDefinition() {
-        InfinispanEmbeddingStoreConfig config = infinispanEmbeddingStoreConfigHandle.get();
+        InfinispanStoreRuntimeConfig config = infinispanEmbeddingStoreConfigHandle.get().defaultConfig();
         String protoContent = PROTO
                 .replace("DIMENSION", config.dimension().toString())
                 .replace("SIMILARITY", config.similarity());
@@ -71,12 +76,12 @@ public class SchemaAndMarshallerProducer {
 
     @Produces
     public MessageMarshaller langchainItemMarshaller() {
-        return new LangchainItemMarshaller(infinispanEmbeddingStoreConfigHandle.get().dimension());
+        return new LangchainItemMarshaller(infinispanEmbeddingStoreConfigHandle.get().defaultConfig().dimension());
     }
 
     @Produces
     public MessageMarshaller langchainMetadataMarshaller() {
         return new LangchainMetadataMarshaller(
-                LANGCHAIN_METADATA + infinispanEmbeddingStoreConfigHandle.get().dimension());
+                LANGCHAIN_METADATA + infinispanEmbeddingStoreConfigHandle.get().defaultConfig().dimension());
     }
 }
